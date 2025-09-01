@@ -1,0 +1,11 @@
+Rodar api
+python -m uvicorn main:app --reload
+
+API rodando: http://127.0.0.1:8000
+Swagger UI (documentação): http://127.0.0.1:8000/docs
+ReDoc: http://127.0.0.1:8000/redoc
+
+
+curl --location 'http://127.0.0.1:8000/usuarios/' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTc1NTk4MjA4OX0.wemwc34lDf-RGxXU7ryDFvzx-OjYjTj9iT4zrMO4MOg'
+
