@@ -8,6 +8,8 @@ from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from fastapi.middleware.cors import CORSMiddleware
+import requests
 
 # -------------------- Configs/JWT --------------------
 SECRET_KEY = "ABFD-EFG-HIJ"  
@@ -112,6 +114,20 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 # -------------------- FastAPI App --------------------
 app = FastAPI(title="API de Usuários")
 
+# Configurar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*", "null"],  # Ou ["*"] para desenvolvimento
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Rota inicial GET
+@app.get("/")
+def read_root():
+    return {"message": "API de Login esta rodando...."}
+
 # --------- Auth: obter token (login) ----------
 @app.post("/token", response_model=Token, summary="Login e obtenção de token JWT")
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -186,3 +202,95 @@ def deletar_usuario(user_id: int, current_user: UsuarioDB = Depends(get_current_
     db.delete(user)
     db.commit()
     return {"message": "Usuário deletado com sucesso"}
+
+# Endpoint para validar token
+@app.get("/valida-token")
+async def validate_token(current_user: UsuarioDB = Depends(get_current_user), db: Session = Depends(get_db)):
+    return {"valid": True, "username": current_user}
+
+# Modelo de resposta
+class PrevisaoTempoOut(BaseModel):
+    cidade: str
+    pais: str
+    previsao: Optional[dict] = None
+    mensagem: Optional[str] = None
+
+# Modelo para dados de localização
+class Localizacao(BaseModel):
+    ip: Optional[str] = None
+    cidade: str
+    regiao: str
+    pais: str
+    lat: float
+    lon: float
+
+# Função para obter localização por IP
+def get_location_by_ip(ip=None):
+    try:
+        url = f"http://ipapi.co/{ip}/json/" if ip else "http://ipapi.co/json/"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return Localizacao(
+                ip=data.get('ip'),
+                cidade=data.get('city'),
+                regiao=data.get('region'),
+                pais=data.get('country_name'),
+                lat=data.get('latitude'),
+                lon=data.get('longitude')
+            )
+        return None
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao obter localização: {e}")
+        return None
+
+# Função para obter previsão do tempo
+def get_weather(lat, lon):
+    try:
+        # Corrigido: removidas as aspas extras around {lat}
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&hourly=temperature_2m&current_weather=true"
+        response = requests.get(url, timeout=10)
+        
+        if response.status_code == 200:
+            data = response.json()
+            return {
+                'temperatura_atual': data.get('current_weather', {}).get('temperature'),
+                'codigo_tempo': data.get('current_weather', {}).get('weathercode'),
+                'hora': data.get('current_weather', {}).get('time'),
+                'hourly': {
+                    'time': data.get('hourly', {}).get('time'),
+                    'temperature_2m': data.get('hourly', {}).get('temperature_2m')
+                }
+            }
+        return None
+    except requests.exceptions.RequestException as e:
+        print(f"Erro ao obter previsão do tempo: {e}")
+        return None
+
+# Endpoint para previsão do tempo
+@app.get("/previsao-tempo", response_model=PrevisaoTempoOut, status_code=200, summary="Previsão do Tempo")
+async def previsao_tempo():
+    # Obtém a localização pelo IP
+    location = get_location_by_ip()
+    print('Localização obtida:', location)
+    
+    if not location:
+        raise HTTPException(status_code=500, detail="Não foi possível obter a localização")
+    
+    # Obtém a previsão do tempo
+    previsao = get_weather(location.lat, location.lon)
+    print('Previsão obtida:', previsao)
+    
+    if not previsao:
+        return PrevisaoTempoOut(
+            cidade=location.cidade,
+            pais=location.pais,
+            mensagem="Não foi possível obter a previsão do tempo"
+        )
+    
+    return PrevisaoTempoOut(
+        cidade=location.cidade,
+        pais=location.pais,
+        previsao=previsao
+    )

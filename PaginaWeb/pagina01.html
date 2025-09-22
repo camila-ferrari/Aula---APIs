@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Protegida</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #2e7d32;
+            background-color: #e8f5e8;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #2196f3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+        .logout-btn {
+            background-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Página Protegida</h1>
+        <div id="message"></div>
+        <div id="content" style="display: none;">
+            <h2>Bem-vindo a área protegida!</h2>
+            <p>Seu token é válido e você está autenticado.</p>
+            <button class="logout-btn" onclick="logout()">Sair</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Função para mostrar mensagens
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = message;
+            messageDiv.className = type;
+            messageDiv.style.display = 'block';
+        }
+
+        // Função para validar o token
+        async function validateToken() {
+            const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                showMessage('Token não encontrado. Faça login novamente.', 'error');
+                setTimeout(() => {
+                    window.location.href = 'index.html'; // Volta para a página de login
+                }, 1000);
+                return false;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/valida-token`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    // Token válido
+                    document.getElementById('content').style.display = 'block';
+                    return true;
+                } else {
+                    // Token inválido ou expirado
+                    localStorage.removeItem('authToken');
+                    showMessage('Token inválido ou expirado. Faça login novamente.', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Erro ao validar token:', error);
+                showMessage('Erro de conexão.', 'error');
+                return false;
+            }
+        }
+
+        // Função para buscar dados protegidos
+        async function fetchProtectedData() {
+            const token = localStorage.getItem('authToken');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/protected-data`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('protected-data').innerHTML = 
+                        `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    showMessage('Erro ao buscar dados protegidos.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage('Erro de conexão.', 'error');
+            }
+        }
+
+        // Função para logout
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = 'index.html';
+        }
+
+        // Validar token quando a página carregar
+        window.addEventListener('DOMContentLoaded', validateToken);
+    </script>
+</body>
+</html>

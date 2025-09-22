@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projeto PEX - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #4a6fc0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .form-container {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: #4a6fc0;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(74, 111, 192, 0.2);
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4a6fc0;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3b5aa6;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            margin-top: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .token-display {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+            word-break: break-all;
+            display: none;
+        }
+        
+        .token-display h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background-color: #ddd;
+        }
+        
+        .divider span {
+            background-color: white;
+            padding: 0 15px;
+            position: relative;
+            color: #777;
+        }
+        
+        .form-toggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        
+        .form-toggle a {
+            color: #4a6fc0;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .form-toggle a:hover {
+            text-decoration: underline;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Projeto PEX</h1>
+        </div>
+        
+        <div class="form-container">
+            <div id="message" class="message"></div>
+            
+            <!-- Formulário de Login -->
+            <div id="loginForm">
+                <h2>Login</h2>
+                <div class="form-group">
+                    <label for="loginUsername">Usuário</label>
+                    <input type="text" id="loginUsername" placeholder="Digite seu usuário">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha">
+                </div>
+                <button class="btn" onclick="login()">Entrar</button>
+                
+                <div class="form-toggle">
+                    Não tem uma conta? <a onclick="showRegisterForm()">Criar usuário</a>
+                </div>
+            </div>
+            
+            <!-- Formulário de Registro -->
+            <div id="registerForm" class="hidden">
+                <h2>Criar Usuário</h2>
+                <div class="form-group">
+                    <label for="registerUsername">Usuário</label>
+                    <input type="text" id="registerUsername" placeholder="Escolha um usuário">
+                </div>
+                <div class="form-group">
+                    <label for="nameUsername">Nome do Usuário</label>
+                    <input type="text" id="nameUsername" placeholder="Nome do usuário">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">E-mail</label>
+                    <input type="email" id="registerEmail" placeholder="Digite seu e-mail">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Senha</label>
+                    <input type="password" id="registerPassword" placeholder="Crie uma senha">
+                </div>
+                <div class="form-group">
+                    <label for="registerPasswordConfirm">Confirmar Senha</label>
+                    <input type="password" id="registerPasswordConfirm" placeholder="Repita a senha">
+                </div>
+                <button class="btn" onclick="register()">Criar Usuário</button>
+                
+                <div class="form-toggle">
+                    Já tem uma conta? <a onclick="showLoginForm()">Fazer login</a>
+                </div>
+            </div>
+            
+            <!-- Área do Token -->
+            <div id="tokenArea" class="token-display">
+                <h3>Token de Acesso:</h3>
+                <p id="tokenText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL base da API - altere conforme necessário
+        const API_BASE_URL = 'http://localhost:8000';
+        
+        // Elementos do DOM
+        const messageDiv = document.getElementById('message');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const tokenArea = document.getElementById('tokenArea');
+        const tokenText = document.getElementById('tokenText');
+        
+        // Função para mostrar mensagens
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            
+            // Esconder a mensagem após 5 segundos
+            setTimeout(() => {
+                messageDiv.className = 'message';
+            }, 5000);
+        }
+        
+        // Alternar entre formulários
+        function showLoginForm() {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        }
+        
+        function showRegisterForm() {
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        }
+        
+        // Função para criar usuário
+        async function register() {
+            const username = document.getElementById('registerUsername').value;
+            const nameuser = document.getElementById('nameUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+            
+            // Validações básicas
+            if (!username || !nameuser || !email || !password || !passwordConfirm) {
+                showMessage('Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+            
+            if (password !== passwordConfirm) {
+                showMessage('As senhas não coincidem.', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showMessage('A senha deve ter pelo menos 6 caracteres.', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/usuarios`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        usuario: username,
+                        nome: nameuser,
+                        email: email,
+                        senha: password
+                    }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('Usuário criado com sucesso! Agora você pode fazer login.', 'success');
+                    // Limpar formulário
+                    document.getElementById('registerUsername').value = '';
+                    document.getElementById('nameUsername').value = '';
+                    document.getElementById('registerEmail').value = '';
+                    document.getElementById('registerPassword').value = '';
+                    document.getElementById('registerPasswordConfirm').value = '';
+                    // Mostrar formulário de login
+                    showLoginForm();
+                } else {
+                    showMessage(data.detail || 'Erro ao criar usuário.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro de conexão. Verifique se a API está rodando.', 'error');
+                console.error('Erro:', error);
+            }
+        }
+        
+        // Função para fazer login
+        async function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Validações básicas
+            if (!username || !password) {
+                showMessage('Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+            
+            // FormData é usado para enviar dados no formato application/x-www-form-urlencoded
+            const formData = new URLSearchParams();
+            formData.append('grant_type', 'password');
+            formData.append('username', username);
+            formData.append('password', password);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'accept': 'application/json',
+                    },
+                    body: formData.toString(),
+                });
+
+                console.log('Status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showMessage('Login realizado com sucesso!', 'success');
+                    
+                    // Você pode armazenar o token para uso futuro
+                    localStorage.setItem('authToken', data.access_token);
+
+                    // Redirecionar para a outra página após 2 segundos
+                    setTimeout(() => {
+                        window.location.href = 'pagina01.html';
+                    }, 1000);                    
+                    
+                } else {
+                    const errorData = await response.json();
+                    showMessage(errorData.detail || 'Erro ao fazer login.', 'error');
+                }
+            } catch (error) {
+                showMessage('Erro conexão. Verifique se a API está rodando. ', 'error');
+                console.error('Erro:', error);
+            }
+        }
+
+    </script>
+</body>
+</html>
